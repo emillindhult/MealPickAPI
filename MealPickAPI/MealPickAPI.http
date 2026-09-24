@@ -1,0 +1,6 @@
+@MealPickAPI_HostAddress = http://localhost:5125
+
+GET {{MealPickAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

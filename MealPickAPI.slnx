@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="AuthenticationService/AuthenticationService.csproj" Id="2f27807a-3bf3-4962-a72c-68f816be7d55" />
+  <Project Path="MealPickAPI/MealPickAPI.csproj" />
+</Solution>
