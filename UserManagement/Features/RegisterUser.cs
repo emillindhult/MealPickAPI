@@ -14,7 +14,7 @@ public static class RegisterUser
             ApplicationDbContext dbContext,
             UserManager<ApplicationUser> userManager) =>
         {
-            using var transaction = dbContext.Database.BeginTransactionAsync();
+            using var transaction = await dbContext.Database.BeginTransactionAsync();
 
             var user = new ApplicationUser
             {
@@ -37,6 +37,8 @@ public static class RegisterUser
             {
                 return Results.BadRequest(addToRoleResult.Errors);
             }
+
+            await transaction.CommitAsync();
 
             return Results.Ok(user);
         });
