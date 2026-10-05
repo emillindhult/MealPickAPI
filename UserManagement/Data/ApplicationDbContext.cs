@@ -14,7 +14,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<ApplicationUser>(entity =>
         {
             entity.Property(e => e.EnableNotifications).HasDefaultValue(true);
-            entity.Property(e => e.Initials).HasMaxLength(5);
         });
 
         builder.HasDefaultSchema("identity");

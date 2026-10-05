@@ -5,7 +5,7 @@ namespace UserManagement.Features;
 
 public static class RegisterUser
 {
-    public record Request(string Email, string Initials, string Password, bool EnableNotifications = false);
+    public record Request(string Email, string Password, bool EnableNotifications = false);
 
     public static void MapEndpoint(IEndpointRouteBuilder app)
     {
@@ -20,7 +20,6 @@ public static class RegisterUser
             {
                 UserName = request.Email,
                 Email = request.Email,
-                Initials = request.Initials,
                 EnableNotifications = request.EnableNotifications
             };
 
