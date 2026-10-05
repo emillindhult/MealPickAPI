@@ -20,6 +20,11 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapIdentityApi<IdentityUser>();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
