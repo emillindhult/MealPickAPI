@@ -1,4 +1,5 @@
 using MealPickAPI.Data;
+using MealPickAPI.Features.Recipes.Create;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,6 +25,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapIdentityApi<IdentityUser>();
+app.MapCreateRecipe();
 
 if (app.Environment.IsDevelopment())
 {

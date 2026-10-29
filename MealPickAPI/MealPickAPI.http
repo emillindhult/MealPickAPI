@@ -4,3 +4,23 @@ GET {{MealPickAPI_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+@authToken = paste-your-access-token-here
+
+POST {{MealPickAPI_HostAddress}}/recipes
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "Vegetable pasta",
+  "description": "A quick pasta recipe.",
+  "instructions": [
+    "Boil the pasta.",
+    "Cook the vegetables.",
+    "Combine and serve."
+  ],
+  "categoryIds": [],
+  "ingredientIds": []
+}
+
+###
