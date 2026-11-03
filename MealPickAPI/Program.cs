@@ -1,4 +1,5 @@
 using MealPickAPI.Data;
+using MealPickAPI.Features.Ingredients.Create;
 using MealPickAPI.Features.Recipes.Create;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services
     .AddIdentityApiEndpoints<IdentityUser>()
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>();
 
 builder.Services.AddAuthentication();
@@ -25,6 +27,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapIdentityApi<IdentityUser>();
+app.MapCreateIngredient();
 app.MapCreateRecipe();
 
 if (app.Environment.IsDevelopment())
@@ -35,10 +38,18 @@ if (app.Environment.IsDevelopment())
     {
         options.SwaggerEndpoint("/openapi/v1.json", "API v1");
     });
+}
 
-    using var scope = app.Services.CreateScope();
+using (var scope = app.Services.CreateScope())
+{
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.Migrate();
+    if (app.Environment.IsDevelopment())
+    {
+        dbContext.Database.Migrate();
+    }
+
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    await DatabaseSeeder.SeedAsync(dbContext, roleManager);
 }
 
 app.UseHttpsRedirection();
