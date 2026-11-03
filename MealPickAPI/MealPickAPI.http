@@ -7,6 +7,16 @@ Accept: application/json
 
 @authToken = paste-your-access-token-here
 
+POST {{MealPickAPI_HostAddress}}/ingredients
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Flour"
+}
+
+###
+
 POST {{MealPickAPI_HostAddress}}/recipes
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
@@ -15,12 +25,18 @@ Content-Type: application/json
   "title": "Vegetable pasta",
   "description": "A quick pasta recipe.",
   "instructions": [
-    "Boil the pasta.",
-    "Cook the vegetables.",
-    "Combine and serve."
+    { "text": "Boil the pasta." },
+    { "text": "Cook the vegetables." },
+    { "text": "Combine and serve." }
   ],
   "categoryIds": [],
-  "ingredientIds": []
+  "ingredients": [
+    {
+      "ingredientId": "replace-with-global-ingredient-id",
+      "amount": 1,
+      "unit": "tsp"
+    }
+  ]
 }
 
 ###
