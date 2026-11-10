@@ -2,6 +2,8 @@ namespace MealPickAPI.Domain;
 
 public sealed class RecipeInstruction
 {
+    public const int TextMaxLength = 2000;
+
     private RecipeInstruction()
     {
     }

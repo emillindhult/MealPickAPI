@@ -19,108 +19,105 @@ public static class CreateRecipeEndpoint
     private static async Task<IResult> HandleAsync(
         CreateRecipeRequest request,
         ClaimsPrincipal user,
-        AppDbContext dbContext)
+        AppDbContext dbContext,
+        CancellationToken cancellationToken)
     {
-        var userIdClaim = user.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(userIdClaim))
+        var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
         {
             return Results.Unauthorized();
         }
 
-        if (string.IsNullOrWhiteSpace(request.Title) || request.Title.Length > 100)
+        var title = request.Title?.Trim() ?? string.Empty;
+        var description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
+        var instructions = request.Instructions ?? [];
+        var ingredients = request.Ingredients ?? [];
+        var categoryIds = (request.CategoryIds ?? []).Distinct().ToList();
+
+        var validationError = Validate(title, description, instructions, ingredients);
+        if (validationError is not null)
         {
-            return Results.BadRequest(new { error = "Title is required and must be 100 characters or fewer." });
+            return Results.BadRequest(new { error = validationError });
         }
 
-        if (request.Description is not null && request.Description.Length > 300)
-        {
-            return Results.BadRequest(new { error = "Description must be 300 characters or fewer." });
-        }
-
-        if (request.Instructions.Any(instruction =>
-                string.IsNullOrWhiteSpace(instruction.Text) || instruction.Text.Length > 2000))
-        {
-            return Results.BadRequest(new { error = "Instructions are required and must be 2,000 characters or fewer." });
-        }
-
-        if (request.Ingredients.Any(ingredient =>
-                ingredient.Amount <= 0 ||
-                string.IsNullOrWhiteSpace(ingredient.Unit) ||
-                ingredient.Unit.Length > 20))
-        {
-            return Results.BadRequest(new { error = "Each ingredient must have a positive amount and a unit of 20 characters or fewer." });
-        }
-
-        var categoryIds = request.CategoryIds.Distinct().ToList();
-        var ingredientRequests = request.Ingredients.ToList();
-        var ingredientIds = ingredientRequests.Select(ingredient => ingredient.IngredientId).ToList();
-
-        if (ingredientIds.Count != ingredientIds.Distinct().Count())
-        {
-            return Results.BadRequest(new { error = "An ingredient can only be added once to a recipe." });
-        }
-
+        // Categories are attached to the recipe, so they must be loaded.
+        // Ingredients are only referenced by ID, so counting them is enough.
+        var ingredientIds = ingredients.Select(ingredient => ingredient.IngredientId).ToList();
         var categories = await dbContext.Categories
             .Where(category => categoryIds.Contains(category.Id))
-            .ToListAsync();
-        var ingredients = await dbContext.Ingredients
-            .Where(ingredient => ingredientIds.Contains(ingredient.Id))
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
+        var existingIngredientCount = await dbContext.Ingredients
+            .CountAsync(ingredient => ingredientIds.Contains(ingredient.Id), cancellationToken);
 
-        if (categories.Count != categoryIds.Count || ingredients.Count != ingredientIds.Count)
+        if (categories.Count != categoryIds.Count || existingIngredientCount != ingredientIds.Count)
         {
             return Results.BadRequest(new { error = "One or more category or ingredient IDs do not exist." });
         }
 
-        var recipe = new Recipe(userIdClaim, request.Title.Trim(), request.Description?.Trim());
+        var recipe = new Recipe(userId, title, description);
 
         foreach (var category in categories)
         {
             recipe.Categories.Add(category);
         }
 
-        for (var index = 0; index < ingredientRequests.Count; index++)
+        for (var index = 0; index < ingredients.Count; index++)
         {
-            var ingredient = ingredientRequests[index];
-            recipe.AddIngredient(
-                ingredient.IngredientId,
-                ingredient.Amount,
-                ingredient.Unit.Trim(),
-                index);
+            var ingredient = ingredients[index];
+            recipe.AddIngredient(ingredient.IngredientId, ingredient.Amount, ingredient.Unit!.Trim(), displayOrder: index);
         }
 
-        for (var index = 0; index < request.Instructions.Count; index++)
+        for (var index = 0; index < instructions.Count; index++)
         {
-            var instruction = request.Instructions[index];
-            recipe.AddInstruction(instruction.Text.Trim(), index + 1);
+            recipe.AddInstruction(instructions[index].Text!.Trim(), stepNumber: index + 1);
         }
 
         dbContext.Recipes.Add(recipe);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(cancellationToken);
 
-        return Results.Created($"/recipes/{recipe.Id}", new
+        return Results.Created($"/recipes/{recipe.Id}", CreateRecipeResponse.From(recipe));
+    }
+
+    /// <summary>Returns an error message, or <c>null</c> when the request is valid.</summary>
+    private static string? Validate(
+        string title,
+        string? description,
+        List<CreateRecipeInstructionRequest> instructions,
+        List<CreateRecipeIngredientRequest> ingredients)
+    {
+        if (title.Length == 0 || title.Length > Recipe.TitleMaxLength)
         {
-            recipe.Id,
-            recipe.UserId,
-            recipe.Title,
-            Description = recipe.Description,
-            Instructions = recipe.Instructions
-                .OrderBy(instruction => instruction.StepNumber)
-                .Select(instruction => new
-                {
-                    instruction.StepNumber,
-                    instruction.Text
-                }),
-            CategoryIds = categories.Select(category => category.Id),
-            Ingredients = recipe.RecipeIngredients
-                .OrderBy(ingredient => ingredient.DisplayOrder)
-                .Select(ingredient => new
-                {
-                    ingredient.IngredientId,
-                    ingredient.Amount,
-                    ingredient.Unit,
-                    ingredient.DisplayOrder
-                })
-        });
+            return $"Title is required and must be {Recipe.TitleMaxLength} characters or fewer.";
+        }
+
+        if (description?.Length > Recipe.DescriptionMaxLength)
+        {
+            return $"Description must be {Recipe.DescriptionMaxLength} characters or fewer.";
+        }
+
+        if (instructions.Any(instruction =>
+                instruction is null ||
+                string.IsNullOrWhiteSpace(instruction.Text) ||
+                instruction.Text.Trim().Length > RecipeInstruction.TextMaxLength))
+        {
+            return $"Instructions are required and must be {RecipeInstruction.TextMaxLength} characters or fewer.";
+        }
+
+        if (ingredients.Any(ingredient =>
+                ingredient is null ||
+                ingredient.Amount <= 0 ||
+                string.IsNullOrWhiteSpace(ingredient.Unit) ||
+                ingredient.Unit.Trim().Length > RecipeIngredient.UnitMaxLength))
+        {
+            return $"Each ingredient must have a positive amount and a unit of {RecipeIngredient.UnitMaxLength} characters or fewer.";
+        }
+
+        var distinctIngredientCount = ingredients.Select(ingredient => ingredient.IngredientId).Distinct().Count();
+        if (distinctIngredientCount != ingredients.Count)
+        {
+            return "An ingredient can only be added once to a recipe.";
+        }
+
+        return null;
     }
 }
