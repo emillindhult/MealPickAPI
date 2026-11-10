@@ -2,6 +2,8 @@ namespace MealPickAPI.Domain;
 
 public sealed class RecipeIngredient
 {
+    public const int UnitMaxLength = 20;
+
     private RecipeIngredient()
     {
     }

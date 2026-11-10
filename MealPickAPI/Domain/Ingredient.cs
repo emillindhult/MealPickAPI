@@ -1,7 +1,9 @@
-﻿namespace MealPickAPI.Domain;
+namespace MealPickAPI.Domain;
 
 public sealed class Ingredient
 {
+    public const int NameMaxLength = 100;
+
     private Ingredient()
     {
     }

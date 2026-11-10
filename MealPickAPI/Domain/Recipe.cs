@@ -1,7 +1,11 @@
-﻿namespace MealPickAPI.Domain;
+namespace MealPickAPI.Domain;
 
 public sealed class Recipe
 {
+    public const int UserIdMaxLength = 450;
+    public const int TitleMaxLength = 100;
+    public const int DescriptionMaxLength = 300;
+
     private Recipe()
     {
     }

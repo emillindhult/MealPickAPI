@@ -1,10 +1,5 @@
 @MealPickAPI_HostAddress = http://localhost:5125
 
-GET {{MealPickAPI_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
-
 @authToken = paste-your-access-token-here
 
 POST {{MealPickAPI_HostAddress}}/ingredients

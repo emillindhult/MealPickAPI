@@ -1,4 +1,4 @@
-﻿using MealPickAPI.Domain;
+using MealPickAPI.Domain;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,14 +23,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
             entity.Property(recipe => recipe.UserId)
                 .IsRequired()
-                .HasMaxLength(450);
+                .HasMaxLength(Recipe.UserIdMaxLength);
 
             entity.Property(recipe => recipe.Title)
                 .IsRequired()
-                .HasMaxLength(100);
+                .HasMaxLength(Recipe.TitleMaxLength);
 
             entity.Property(recipe => recipe.Description)
-                .HasMaxLength(300);
+                .HasMaxLength(Recipe.DescriptionMaxLength);
 
             entity.HasIndex(recipe => recipe.UserId);
 
@@ -45,7 +45,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
             entity.Property(category => category.Name)
                 .IsRequired()
-                .HasMaxLength(50);
+                .HasMaxLength(Category.NameMaxLength);
 
             entity.HasIndex(category => category.Name)
                 .IsUnique();
@@ -57,7 +57,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
             entity.Property(ingredient => ingredient.Name)
                 .IsRequired()
-                .HasMaxLength(100);
+                .HasMaxLength(Ingredient.NameMaxLength);
 
             entity.HasIndex(ingredient => ingredient.Name)
                 .IsUnique();
@@ -76,7 +76,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
             entity.Property(recipeIngredient => recipeIngredient.Unit)
                 .IsRequired()
-                .HasMaxLength(20);
+                .HasMaxLength(RecipeIngredient.UnitMaxLength);
 
             entity.HasIndex(recipeIngredient => new
             {
@@ -102,7 +102,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
             entity.Property(instruction => instruction.Text)
                 .IsRequired()
-                .HasMaxLength(2000);
+                .HasMaxLength(RecipeInstruction.TextMaxLength);
 
             entity.HasIndex(instruction => new
             {
