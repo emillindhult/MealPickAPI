@@ -12,6 +12,16 @@ Content-Type: application/json
 
 ###
 
+POST {{MealPickAPI_HostAddress}}/ingredients
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Flour"
+}
+
+###
+
 POST {{MealPickAPI_HostAddress}}/recipes
 Authorization: Bearer {{authToken}}
 Content-Type: application/json
