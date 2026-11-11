@@ -1,6 +1,7 @@
 using MealPickAPI.Data;
 using MealPickAPI.Features.Ingredients.Create;
 using MealPickAPI.Features.Instructions.Create;
+using MealPickAPI.Features.RecipeIngredients.Create;
 using MealPickAPI.Features.Recipes.Create;
 using MealPickAPI.OpenApi;
 using Microsoft.AspNetCore.Identity;
@@ -49,6 +50,7 @@ app.MapIdentityApi<IdentityUser>();
 app.MapCreateIngredient();
 app.MapCreateRecipe();
 app.MapCreateInstruction();
+app.MapCreateRecipeIngredient();
 
 app.Run();
 
