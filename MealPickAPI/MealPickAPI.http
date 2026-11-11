@@ -45,3 +45,13 @@ Content-Type: application/json
 }
 
 ###
+
+POST {{MealPickAPI_HostAddress}}/recipes/replace-with-recipe-id/instructions
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "text": "Garnish with fresh basil."
+}
+
+###
