@@ -55,3 +55,15 @@ Content-Type: application/json
 }
 
 ###
+
+POST {{MealPickAPI_HostAddress}}/recipes/replace-with-recipe-id/ingredients
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "ingredientId": "replace-with-global-ingredient-id",
+  "amount": 200,
+  "unit": "g"
+}
+
+###
