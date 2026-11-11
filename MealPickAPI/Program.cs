@@ -1,12 +1,18 @@
 using MealPickAPI.Data;
 using MealPickAPI.Features.Ingredients.Create;
+using MealPickAPI.Features.Instructions.Create;
 using MealPickAPI.Features.Recipes.Create;
+using MealPickAPI.OpenApi;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+    options.AddOperationTransformer<BearerSecuritySchemeTransformer>();
+});
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
@@ -42,6 +48,7 @@ if (app.Environment.IsDevelopment())
 app.MapIdentityApi<IdentityUser>();
 app.MapCreateIngredient();
 app.MapCreateRecipe();
+app.MapCreateInstruction();
 
 app.Run();
 
